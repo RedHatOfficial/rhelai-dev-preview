@@ -1,0 +1,84 @@
+---
+- name: Test Environment Provisioning
+  hosts: test_environments
+  remote_user: ec2-user
+  become: true
+  gather_facts: false
+
+  tasks:
+  
+  - name: Wait until the instance is ready
+    ansible.builtin.wait_for_connection:
+    delay: 15
+    timeout: 180
+  
+  - name: Gather facts for first time
+    ansible.builtin.setup:
+
+  - name: Required packages
+    ansible.builtin.dnf:
+      name:
+      - https://s3.eu-west-2.amazonaws.com/amazon-ssm-eu-west-2/latest/linux_amd64/amazon-ssm-agent.rpm
+      - podman
+      state: present
+      disable_gpg_check: true
+
+  - name: Derived Image Containerfile
+    ansible.builtin.template:
+      src: ./templates/Containerfile.j2
+      dest: /tmp/Containerfile
+
+  - name: Login to default registry
+    containers.podman.podman_login:
+      username: "{{ registry_user }}"
+      password: "{{ registry_password }}"
+      registry: quay.io
+      authfile: /etc/containers/auth.json
+
+  - name: Build the Bootc Image
+    async: 1000
+    poll: 0
+    register: build_result
+    ansible.builtin.shell: |
+      podman build -t quay.io/ai-lab/derived_image:latest --build-arg "sshpubkey={{ ssh_public_key }}" -f /tmp/Containerfile --authfile=/etc/containers/auth.json .
+      podman push quay.io/ai-lab/derived_image:latest --authfile=/etc/containers/auth.json
+
+  - name: Check on Build Bootc Image
+    async_status:
+      jid: "{{ build_result.ansible_job_id }}"
+    register: job_result
+    until: job_result.finished
+    retries: 100
+    delay: 10
+
+  - name: Install the Bootc Image
+    async: 1000
+    poll: 0
+    register: install_result
+    ansible.builtin.shell: |
+      podman run --authfile=/etc/containers/auth.json \
+        --rm --privileged --pid=host \ 
+        --security-opt label=type:unconfined_t \ 
+        -v /etc/containers/:/etc/containers \
+        -v /:/target \
+        -v /var/lib/containers:/var/lib/containers quay.io/ai-lab/derived_image:latest \ 
+        bootc install to-filesystem --karg=console=ttyS0,115200n8 --karg=systemd.journald.forward_to_console=1 --replace=alongside /target 
+
+  - name: Check on Install Bootc Image
+    async_status:
+      jid: "{{ install_result.ansible_job_id }}"
+    register: job_result
+    until: job_result.finished
+    retries: 100
+    delay: 10
+
+  - name: Remove the host from the known_host file
+    ansible.builtin.known_hosts:
+      name: "{{ inventory_hostname }}"
+      state: absent
+    delegate_to: localhost
+
+  - name: Reboot
+    ansible.builtin.shell: systemctl reboot
+    ignore_errors: true
+    ignore_unreachable: true
