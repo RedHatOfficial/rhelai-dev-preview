@@ -85,7 +85,7 @@ and uploading container images could take up to 2 hours.
 
 - RHEL 9.4
 - Connection to the internet (some images are > 15GB)
-- 4 CPU, 16GB RAM, 400GB disk space (tested with EC2 m5.xlarge using GP3 storage)
+- 4 CPU, 16GB RAM, 400GB disk space (tested with AWS EC2 m5.xlarge using GP3 storage)
 - A place to push container images that you will build – e.g., quay.io or another image registry.
 
 ## Preparing the Build Host
