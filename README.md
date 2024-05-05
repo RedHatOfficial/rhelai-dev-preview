@@ -49,7 +49,7 @@ server.
 
 **Formula:**
 A single GPU can train ~250 samples per minute.
-If you have 8 GPUs and 10,000 samples, expect it to take (10000/250/8*10) minutes, or about 50 minutes for 10 epochs.
+If you have 8 GPUs and 10,000 samples, expect it to take $`(10000/250/8*10)`$ minutes, or about 50 minutes for 10 epochs.
 For smoke testing, feel free to run 1-2 epochs (note we recommend 10 epochs for best results).
 
 ## Trying it Out
@@ -64,14 +64,14 @@ By the end of this exercise, you’ll have:
 
 [`bootc`](https://containers.github.io/bootc/) is a transactional, in-place
 operating system that provisions and updates using OCI/Docker container images.
-bootc is the key component in a broader mission of bootable containers.
+`bootc` is the key component in a broader mission of bootable containers.
 
 The original Docker container model of using "layers" to model applications has
 been extremely successful. This project aims to apply the same technique for
 bootable host systems - using standard OCI/Docker containers as a transport and
 delivery format for base operating system updates.
 
-The container image includes a Linux kernel (in e.g. /usr/lib/modules), which is
+The container image includes a Linux kernel (in e.g. `/usr/lib/modules`), which is
 used to boot. At runtime on a target system, the base userspace is not itself
 running in a container by default. For example, assuming systemd is in use,
 systemd acts as pid1 as usual - there's no "outer" process.
@@ -85,7 +85,7 @@ and uploading container images could take up to 2 hours.
 
 - RHEL 9.4
 - Connection to the internet (some images are > 15GB)
-- 4 CPU, 16GB RAM, 400GB disk space (tested with EC2 m5.xlarge using GP3 storage)
+- 4 CPU, 16GB RAM, 400GB disk space (tested with AWS EC2 m5.xlarge using GP3 storage)
 - A place to push container images that you will build – e.g., quay.io or another image registry.
 
 ## Preparing the Build Host
@@ -130,7 +130,7 @@ RHEL AI includes a set of Makefiles to facilitate creating the container images.
 Depending on your build host hardware and internet connection speed, this could
 take up to an hour.
 
-Build the instructlab nvidia container image.
+Build the InstructLab NVIDIA container image.
 
 ```sh
 make instruct-nvidia
@@ -148,7 +148,7 @@ Build the [deepspeed](https://www.deepspeed.ai/) container image.
 make deepspeed
 ```
 
-Last, build the RHEL AI nvidia `bootc` container image. This is the RHEL
+Last, build the RHEL AI NVIDIA `bootc` container image. This is the RHEL
 Image-mode “bootable” container. We embed the 3 images above into this
 container.
 
@@ -189,7 +189,7 @@ was introduced with RHEL 9.4.  We use `ostreecontainer` to provision the bootabl
 `nvidia-bootc` container you just pushed to your registry over the network.
 
 Here is an example of a kickstart file. Copy it to a file called
-rhelai-dev-preview-bootc.ks, and customize it for your environment:
+`rhelai-dev-preview-bootc.ks`, and customize it for your environment:
 
 ```text
 # text
@@ -238,7 +238,7 @@ Boot your target system using the `rhelai-dev-preview-bootc-ks.iso` file.
 anaconda will pull the nvidia-bootc:latest image from your registry and
 provision RHEL according to your kickstart file.
 
-**Alternative**: the kickstart file can be served via HTTP. On the installation via kernel command line and an external HTTP server – add inst.ks=http(s)://kickstart/url/rhelai-dev-preview-bootc.ks
+**Alternative**: the kickstart file can be served via HTTP. On the installation via kernel command line and an external HTTP server – add `inst.ks=http(s)://kickstart/url/rhelai-dev-preview-bootc.ks`
 
 ## Using RHEL AI and InstructLab
 
@@ -258,7 +258,7 @@ training dataset.
 
 - Before you can start the download process, you need to create an account on
   [HuggingFace.co](https://huggingface.co/) and manually acknowledge the terms and
-   conditions for Mixtral.
+  conditions for Mixtral.
 - Additionally, you will need to create a token on the Hugging Face site so we
   can download the model from the command line.
   - Click on your profile in the upper right corner and click `Settings`.
@@ -271,16 +271,16 @@ training dataset.
 
 #### Understanding the Differences Between ilab and RHEL AI CLIs
 
-The ilab command line interface that is part of the InstructLab project focuses
+The `ilab` command line interface that is part of the InstructLab project focuses
 on running lightweight quantized models on personal computing devices like
 laptops. In contrast, RHEL AI enables the use of high-fidelity training using
-full precision models. For familiarity, the command and parameters mirror that
-of InstructLab’s ilab command; however, the backing implementation is very
+full-precision models. For familiarity, the command and parameters mirror that
+of InstructLab’s `ilab` command; however, the backing implementation is very
 different.
 
 > In RHEL AI, the `ilab` command is a **wrapper** that acts as a front-end to a container architecture pre-bundled on the RHEL AI system.
 
-### Using the ilab Command Line Interface
+### Using the `ilab` Command Line Interface
 
 ### Create a working directory for your project
 
@@ -295,7 +295,7 @@ cd my-project
 
 #### Initialize your project
 
-The very first ilab command you will run sets up the base environment, including
+The very first `ilab` command you will run sets up the base environment, including
 downloading the taxonomy repo if you choose. This will be needed for later
 steps, so it is recommended to do so.
 
@@ -373,10 +373,10 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 #### Generating new Synthetic Data
 
 Now that VLLM is serving the teacher mode, the generation process can be started
-using the ilab generate command. This process will take some time to complete
+using the `ilab` generate command. This process will take some time to complete
 and will continually output the total number of instructions generated as it is
 updated. This defaults to 5000 instructions, but you can adjust this with the
-–num-instructions option.
+`--num-instructions` option.
 
 ```sh
 ilab generate
@@ -416,7 +416,7 @@ INFO:     Finished server process [1]
 ### Starting Training
 
 With VLLM stopped and the new data generated, the training process can be
-launched using the ```ilab train``` command. By default, the training process
+launched using the `ilab train` command. By default, the training process
 saves a model checkpoint after every 4999 samples. You can adjust this using the
 –num-samples parameter. Additionally, training defaults to running for 10
 epochs, which can also be adjusted with the –num-epochs parameter. Generally,
@@ -465,7 +465,7 @@ ilab serve --model tuned-0504-0051/samples_49920
 #### Chatting with the New Model
 
 After VLLM has started with the new model, a chat session can be launched by
-creating a new terminal session and passing the same –model parameter to chat
+creating a new terminal session and passing the same `--model` parameter to chat
 (Note that if this does not match, you will receive a 404 error message).  Ask
 it a question related to your taxonomy contributions.
 
@@ -511,7 +511,7 @@ Thank you!
 ### Known Issues
 
 - We have not tried this with Fedora (coming soon!)
-- We intend to include a toolbox container inside the bootc container. For now, you can pull any toolbox image (e.g., fedora toolbx).
+- We intend to include a toolbox container inside the bootc container. For now, you can pull any toolbox image (e.g., Fedora Toolbx).
 - RHUI-entitled hosts (e.g., on AWS) will require additional configuration to move from RHUI cloud auto-registration to Red Hat standard registration.
 - Use subscription-manager with username/password or activation key, then run the following command: `$ sudo subscription-manager config --rhsm.manage_repos=1`
 
@@ -522,7 +522,7 @@ Thank you!
 - “no space left on device” errors (or similar) during container builds
 Ensure your build host has 400GB of storage.
 - Run `make prune` out of the training subdirectory. This will clean up old build artifacts.
-- Sometimes, interrupting the container build process may lead to wanting a complete restart of the process. For those cases, we can instruct podman to start from scratch and discard the cached layers. This is possible by passing the `--no-cache` parameter to the build process
+- Sometimes, interrupting the container build process may lead to wanting a complete restart of the process. For those cases, we can instruct Podman to start from scratch and discard the cached layers. This is possible by passing the `--no-cache` parameter to the build process
 
 ```sh
 make nvidia-bootc CONTAINER_TOOL_EXTRA_ARGS="--no-cache"
