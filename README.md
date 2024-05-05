@@ -4,13 +4,21 @@ This guide will help you assemble and test a developer preview version of the RH
 
 ## Overview
 
-Welcome to the **Red Hat Enterprise Linux AI Developer Preview!** This guide is meant to introduce you to RHEL AI Developer Preview capabilities. As with other Developer Previews, expect changes to these workflows, additional automation and simplification, as well as a broadening of capabilities, hardware and software support versions, performance improvements (and other optimizations) prior to GA.
+Welcome to the **Red Hat Enterprise Linux AI Developer Preview!** This guide is
+meant to introduce you to RHEL AI Developer Preview capabilities. As with other
+Developer Previews, expect changes to these workflows, additional automation and
+simplification, as well as a broadening of capabilities, hardware and software
+support versions, performance improvements (and other optimizations) prior to
+GA.
 
 > RHEL AI is targeted at server platforms and workstations with discrete GPUs. For laptops, please use upstream InstructLab.
 
 ## Validated Hardware for Developer Preview
 
-Here is a list of servers validated by Red Hat engineers to work with the RHEL AI Developer Preview. We anticipate that recent systems certified to run RHEL 9, with recent datacenter GPUs such as those listed below, will work with this Developer Preview.
+Here is a list of servers validated by Red Hat engineers to work with the RHEL
+AI Developer Preview. We anticipate that recent systems certified to run RHEL 9,
+with recent datacenter GPUs such as those listed below, will work with this
+Developer Preview.
 
 - Minimum Total GPU memory: 320GB (e.g., 4 GPUs @ 80GB memory each)
 - Minimum 200GB of disk space for model storage.
@@ -27,7 +35,10 @@ Here is a list of servers validated by Red Hat engineers to work with the RHEL A
 
 ### Training Performance - What to Expect
 
-For the best experience using the RHEL AI developer preview period, we have included a pruned taxonomy tree inside the InstructLab container. This will allow for validating training to complete in a reasonable timeframe on a single server.
+For the best experience using the RHEL AI developer preview period, we have
+included a pruned taxonomy tree inside the InstructLab container. This will
+allow for validating training to complete in a reasonable timeframe on a single
+server.
 
 - Add your knowledge and skills to this version of the taxonomy. We recommend you add no more than 5 additions to the taxonomy tree to keep the resource requirements reasonable.
 - On systems like the above, training should take ~1 hour.
@@ -47,17 +58,26 @@ By the end of this exercise, you’ll have:
 
 ### What is bootc?
 
-`bootc` is a transactional, in-place operating system that provisions and updates using OCI/Docker container images. bootc is the key component in a broader mission of bootable containers.
+`bootc` is a transactional, in-place operating system that provisions and
+updates using OCI/Docker container images. bootc is the key component in a
+broader mission of bootable containers.
 
-The original Docker container model of using "layers" to model applications has been extremely successful. This project aims to apply the same technique for bootable host systems - using standard OCI/Docker containers as a transport and delivery format for base operating system updates.
+The original Docker container model of using "layers" to model applications has
+been extremely successful. This project aims to apply the same technique for
+bootable host systems - using standard OCI/Docker containers as a transport and
+delivery format for base operating system updates.
 
-The container image includes a Linux kernel (in e.g. /usr/lib/modules), which is used to boot. At runtime on a target system, the base userspace is not itself running in a container by default. For example, assuming systemd is in use, systemd acts as pid1 as usual - there's no "outer" process.
+The container image includes a Linux kernel (in e.g. /usr/lib/modules), which is
+used to boot. At runtime on a target system, the base userspace is not itself
+running in a container by default. For example, assuming systemd is in use,
+systemd acts as pid1 as usual - there's no "outer" process.
 
 In the following example, the bootc container is labeled **Node Base Image*
 
 ## Build Host Prerequisites
 
-Depending on your build host hardware and internet connection speed, building and uploading container images could take up to 2 hours.
+Depending on your build host hardware and internet connection speed, building
+and uploading container images could take up to 2 hours.
 
 - RHEL 9.4
 - Connection to the internet (some images are > 15GB)
@@ -66,7 +86,8 @@ Depending on your build host hardware and internet connection speed, building an
 
 ## Preparing the Build Host
 
-Register the host (How to register and subscribe a RHEL system to the Red Hat Customer Portal using Red Hat Subscription-Manager?)
+Register the host (How to register and subscribe a RHEL system to the Red Hat
+Customer Portal using Red Hat Subscription-Manager?)
 
 `sudo subscription-manager register --username <username> --password <password>`
 
@@ -78,7 +99,8 @@ Clone the RHEL AI Developer Preview git repo
 
 `git clone https://github.com/RedHatOfficial/rhelai-dev-preview`
 
-Authenticate to Red Hat registry (Red Hat Container Registry Authentication) using your redhat.com account.
+Authenticate to Red Hat registry (Red Hat Container Registry Authentication)
+using your redhat.com account.
 
 ```shell
 podman login registry.redhat.io --username <username> --password <password>
@@ -86,11 +108,15 @@ podman login --get-login registry.redhat.io
 Your_login_here
 ```
 
-Ensure you have an SSH key on the build host. This is used during the driver toolkit image build. (Using ssh-keygen and sharing for key-based authentication in Linux | Enable Sysadmin)
+Ensure you have an SSH key on the build host. This is used during the driver
+toolkit image build. (Using ssh-keygen and sharing for key-based authentication
+in Linux | Enable Sysadmin)
 
 ### Creating bootc containers
 
-RHEL AI includes a set of Makefiles to facilitate creating the container images. Depending on your build host hardware and internet connection speed, this could take up to an hour.
+RHEL AI includes a set of Makefiles to facilitate creating the container images.
+Depending on your build host hardware and internet connection speed, this could
+take up to an hour.
 
 Build the instructlab nvidia container image.
 
@@ -104,17 +130,21 @@ Build the deepspeed container image.
 
 `make deepspeed`
 
-Last, build the RHEL AI nvidia `bootc` container image. This is the RHEL Image-mode “bootable” container. We embed the 3 images above into this container.
+Last, build the RHEL AI nvidia `bootc` container image. This is the RHEL
+Image-mode “bootable” container. We embed the 3 images above into this
+container.
 
 `make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4`
 
-The resulting image is tagged `quay.io/rhelai-dev-preview/nvidia-bootc:latest`. For more variables and examples, see the README.
+The resulting image is tagged `quay.io/rhelai-dev-preview/nvidia-bootc:latest`.
+For more variables and examples, see the README.
 
 Tag your image with your registry name and path:
 
 `podman tag quay.io/<your-user-name>/nvidia-bootc:latest quay.io/<your-user-name>/nvidia-bootc:latest`
 
-Push the resulting image to your registry. You will refer to this URL inside a kickstart file in an upcoming step.
+Push the resulting image to your registry. You will refer to this URL inside a
+kickstart file in an upcoming step.
 
 `podman push quay.io/<your-user-name>/nvidia-bootc:latest`
 
@@ -122,11 +152,17 @@ Push the resulting image to your registry. You will refer to this URL inside a k
 
 ### Provisioning your GPU host (kickstart method)
 
-Anaconda is the Red Hat Enterprise Linux installer, and it is embedded in all RHEL downloadable iso images. The main method of automating RHEL installation is via scripts called Kickstart. For more information about Anaconda and Kickstart, read these documents.
+Anaconda is the Red Hat Enterprise Linux installer, and it is embedded in all
+RHEL downloadable iso images. The main method of automating RHEL installation is
+via scripts called Kickstart. For more information about Anaconda and Kickstart,
+read these documents.
 
-A recent kickstart command called ostreecontainer was introduced with RHEL 9.4. We use ostreecontainer to provision the bootable ```nvidia-bootc` container you just pushed to your registry over the network.
+A recent kickstart command called ostreecontainer was introduced with RHEL 9.4.
+We use ostreecontainer to provision the bootable ```nvidia-bootc` container you
+just pushed to your registry over the network.
 
-Here is an example of a kickstart file. Copy it to a file called rhelai-dev-preview-bootc.ks, and customize it for your environment:
+Here is an example of a kickstart file. Copy it to a file called
+rhelai-dev-preview-bootc.ks, and customize it for your environment:
 
 ```text
 # text
@@ -156,7 +192,8 @@ Here is an example of a kickstart file. Copy it to a file called rhelai-dev-prev
 
 ### Embed your kickstart into the RHEL Boot iso
 
-Download the RHEL 9.4 “Boot iso”, and use ```mkksiso``` command to embed the kickstart into the RHEL boot iso.
+Download the RHEL 9.4 “Boot iso”, and use ```mkksiso``` command to embed the
+kickstart into the RHEL boot iso.
 
 `mkksiso rhelai-dev-preview-bootc.ks rhel-9.4-x86_64-boot.iso rhelai-dev-preview-bootc-ks.iso`
 
@@ -166,7 +203,9 @@ At this point you should have:
 - `rhelai-dev-preview-bootc.ks`: a kickstart file customized to provision RHEL from your container registry to your target system.
 - `rhelai-dev-preview-bootc-ks.iso`: a bootable RHEL 9.4 ISO with the kickstart embedded.
 
-Boot your target system using the `rhelai-dev-preview-bootc-ks.iso` file.  anaconda will pull the nvidia-bootc:latest image from your registry and provision RHEL according to your kickstart file.
+Boot your target system using the `rhelai-dev-preview-bootc-ks.iso` file.
+anaconda will pull the nvidia-bootc:latest image from your registry and
+provision RHEL according to your kickstart file.
 
 **Alternative**: the kickstart file can be served via HTTP. On the installation via kernel command line and an external HTTP server – add inst.ks=http(s)://kickstart/url/rhelai-dev-preview-bootc.ks
 
@@ -174,26 +213,40 @@ Boot your target system using the `rhelai-dev-preview-bootc-ks.iso` file.  anaco
 
 ### Download Models
 
-Before using the RHEL AI environment, you must download two models, each tailored to a key function in the high-fidelity tuning process. Granite is used as the student model and is responsible for facilitating the training of a new fine-tuned mode. Mixtral is used as the teacher model and is responsible for aiding the generation phase of the LAB process, where skills and knowledge are used in concert to produce a rich training dataset.
+Before using the RHEL AI environment, you must download two models, each
+tailored to a key function in the high-fidelity tuning process. Granite is used
+as the student model and is responsible for facilitating the training of a new
+fine-tuned mode. Mixtral is used as the teacher model and is responsible for
+aiding the generation phase of the LAB process, where skills and knowledge are
+used in concert to produce a rich training dataset.
 
 ### Prerequisites
 
-Before you can start the download process, you need to create an account on HuggingFace.co and manually acknowledge the terms and conditions for Mixtral.
-Additionally, you will need to create a token on the Hugging Face site so we can download the model from the command line.
-Click on your profile in the upper right corner and click Settings.
-Click Access Tokens. Click the New token button and provide a name. The new token only requires the use of Read permissions since it's only being used to fetch models. On this screen, you will be able to generate the token content and save and copy the text to authenticate.
+- Before you can start the download process, you need to create an account on HuggingFace.co and manually acknowledge the terms and conditions for Mixtral.
+- Additionally, you will need to create a token on the Hugging Face site so we can download the model from the command line.
+  - Click on your profile in the upper right corner and click Settings.
+  - Click Access Tokens. Click the New token button and provide a name. The new token only requires the use of Read permissions since it's only being used to fetch models. On this screen, you will be able to generate the token content and save and copy the text to authenticate.
 
 ### Review and accept the terms of the Mixtral model
 
-Understanding the Differences Between ilab and RHEL AI CLIs
-The ilab command line interface that is part of the InstructLab project focuses on running lightweight quantized models on personal computing devices like laptops. In contrast, RHEL AI enables the use of high-fidelity training using full precision models. For familiarity, the command and parameters mirror that of InstructLab’s ilab command; however, the backing implementation is very different.
+#### Understanding the Differences Between ilab and RHEL AI CLIs
+
+The ilab command line interface that is part of the InstructLab project focuses
+on running lightweight quantized models on personal computing devices like
+laptops. In contrast, RHEL AI enables the use of high-fidelity training using
+full precision models. For familiarity, the command and parameters mirror that
+of InstructLab’s ilab command; however, the backing implementation is very
+different.
 
 > In RHEL AI, the `ilab` command is a **wrapper** that acts as a front-end to a container architecture pre-bundled on the RHEL AI system.
 
 ### Using the ilab Command Line Interface
 
-Create a working directory for your project
-The first step is to create a new working directory for your project. Everything will be relative to this working directory. It will contain your models, logs, and training data.
+### Create a working directory for your project
+
+The first step is to create a new working directory for your project. Everything
+will be relative to this working directory. It will contain your models, logs,
+and training data.
 
 ```shell
 mkdir my-project
@@ -202,19 +255,24 @@ cd my-project
 
 #### Initialize your project
 
-The very first ilab command you will run sets up the base environment, including downloading the taxonomy repo if you choose. This will be needed for later steps, so it is recommended to do so.
+The very first ilab command you will run sets up the base environment, including
+downloading the taxonomy repo if you choose. This will be needed for later
+steps, so it is recommended to do so.
 
 `ilab init`
 
 #### Download Granite-7B (~27GB on disk)
 
-Next, download the IBM Granite base model. Important: Do not download the “lab” versions of the model. The granite **base** model is most effective when performing high-fidelity training.
+Next, download the IBM Granite base model. Important: Do not download the “lab”
+versions of the model. The granite **base** model is most effective when
+performing high-fidelity training.
 
 `ilab download --repository ibm/granite-7b-base`
 
 #### Download Mixtral-8x7B-Instruct (~96GB on disk)
 
-Follow the same process, but additionally define an environment variable using the HF token you created in the above section under Access Tokens.
+Follow the same process, but additionally define an environment variable using
+the HF token you created in the above section under Access Tokens.
 
 ```shell
 export HF_TOKEN=<paste token value here>
@@ -223,7 +281,8 @@ ilab download --repository mistralai/Mixtral-8x7B-Instruct-v0.1
 
 #### Directory Structure
 
-Now that you have initialized your project and downloaded your first models, observe the directory structure of your project
+Now that you have initialized your project and downloaded your first models,
+observe the directory structure of your project
 
 ```text
 my-project/
@@ -246,11 +305,18 @@ my-project/
 
 ### Modifying the Taxonomy
 
-The next step is to contribute new knowledge or skills into the taxonomy repo. See the instruct lab documentation for more information and examples of how to do this. We also have set of lab exercises here.  
+The next step is to contribute new knowledge or skills into the taxonomy repo.
+See the instruct lab documentation for more information and examples of how to
+do this. We also have set of lab exercises here.
 
 #### Launching the Teacher model
 
-With the additional taxonomy data added, it’s now possible to generate new synthetic data to eventually train a new model. Although, before generation can begin, a teacher model first needs to be started to assist the generator in constructing new data. In a separate terminal session, run the “serve” command and wait for the VLLM startup to complete. Note this process can take several minutes to complete
+With the additional taxonomy data added, it’s now possible to generate new
+synthetic data to eventually train a new model. Although, before generation can
+begin, a teacher model first needs to be started to assist the generator in
+constructing new data. In a separate terminal session, run the “serve” command
+and wait for the VLLM startup to complete. Note this process can take several
+minutes to complete
 
 ```shell
 ilab serve
@@ -260,7 +326,11 @@ INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
 
 #### Generating new Synthetic Data
 
-Now that VLLM is serving the teacher mode, the generation process can be started using the ilab generate command. This process will take some time to complete and will continually output the total number of instructions generated as it is updated. This defaults to 5000 instructions, but you can adjust this with the –num-instructions option.
+Now that VLLM is serving the teacher mode, the generation process can be started
+using the ilab generate command. This process will take some time to complete
+and will continually output the total number of instructions generated as it is
+updated. This defaults to 5000 instructions, but you can adjust this with the
+–num-instructions option.
 
 `ilab generate`
 
@@ -272,13 +342,18 @@ A> The outcome of infectious, autoimmune, or malignant diseases affecting tonsil
 
 #### Examining the Synthetic Data Set
 
-In addition to the current data printed to the screen during generation, a full output is recorded in the generated folder. Before training it is recommended to review this output to verify it meets expectations. If it is not satisfactory, try modifying or creating new examples in the taxonomy and rerunning.
+In addition to the current data printed to the screen during generation, a full
+output is recorded in the generated folder. Before training it is recommended to
+review this output to verify it meets expectations. If it is not satisfactory,
+try modifying or creating new examples in the taxonomy and rerunning.
 
 `less generated/generated_Mixtral*.json`
 
 #### Stopping VLLM
 
-Once the generated data is satisfactory, the training process can begin. Although first close the VLLM instance in the terminal session that was started for generation.
+Once the generated data is satisfactory, the training process can begin.
+Although first close the VLLM instance in the terminal session that was started
+for generation.
 
 ```text
 CTRL+C
@@ -290,7 +365,14 @@ INFO:     Finished server process [1]
 
 ### Starting Training
 
-With VLLM stopped and the new data generated, the training process can be launched using the ```ilab train``` command. By default, the training process saves a model checkpoint after every 4999 samples. You can adjust this using the –num-samples parameter. Additionally, training defaults to running for 10 epochs, which can also be adjusted with the –num-epochs parameter. Generally, more epochs are better, but after a certain point, the model can become overfitted. It is typically recommended to stay within 10 or fewer epochs and to look at different sample points to find the best result.
+With VLLM stopped and the new data generated, the training process can be
+launched using the ```ilab train``` command. By default, the training process
+saves a model checkpoint after every 4999 samples. You can adjust this using the
+–num-samples parameter. Additionally, training defaults to running for 10
+epochs, which can also be adjusted with the –num-epochs parameter. Generally,
+more epochs are better, but after a certain point, the model can become
+overfitted. It is typically recommended to stay within 10 or fewer epochs and to
+look at different sample points to find the best result.
 
 `ilab train --num-epochs 9`
 
@@ -303,7 +385,8 @@ Epoch 1: 100%|██████████████████████
 
 #### Serving the New Model
 
-Once the training process has completed, the new model entries will be stored in the models directory with locations printed to the terminal
+Once the training process has completed, the new model entries will be stored in
+the models directory with locations printed to the terminal
 
 ```text
 Generated model in /root/workspace/models/tuned-0504-0051:
@@ -320,13 +403,17 @@ Generated model in /root/workspace/models/tuned-0504-0051:
 ./samples_49920
 ```
 
-The same `ilab serve` command can be used to serve the new model by passing the –model option with the name and sample
+The same `ilab serve` command can be used to serve the new model by passing the
+–model option with the name and sample
 
 `ilab serve --model tuned-0504-0051/samples_49920`
 
 #### Chatting with the New Model
 
-After VLLM has started with the new model, a chat session can be launched by creating a new terminal session and passing the same –model parameter to chat (Note that if this does not match, you will receive a 404 error message).  Ask it a question related to your taxonomy contributions.
+After VLLM has started with the new model, a chat session can be launched by
+creating a new terminal session and passing the same –model parameter to chat
+(Note that if this does not match, you will receive a 404 error message).  Ask
+it a question related to your taxonomy contributions.
 
 `ilab chat --model tuned-0504-0051/samples_49920`
 
@@ -352,7 +439,12 @@ After VLLM has started with the new model, a chat session can be launched by cre
 
 ### Summary
 
-That’s it! The purpose of a Developer Preview is to get something out to our users for early feedback. We realize there may be bugs. And we appreciate your time and effort if you’ve made it this far. Chances are you hit some issues or needed to troubleshoot. We encourage you to file bug reports, feature requests, and ask us questions. See the contact information below for how to do that. Thank you!
+That’s it! The purpose of a Developer Preview is to get something out to our
+users for early feedback. We realize there may be bugs. And we appreciate your
+time and effort if you’ve made it this far. Chances are you hit some issues or
+needed to troubleshoot. We encourage you to file bug reports, feature requests,
+and ask us questions. See the contact information below for how to do that.
+Thank you!
 
 ### How to contact us
 
