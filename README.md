@@ -11,7 +11,9 @@ simplification, as well as a broadening of capabilities, hardware and software
 support versions, performance improvements (and other optimizations) prior to
 GA.
 
-> RHEL AI is targeted at server platforms and workstations with discrete GPUs. For laptops, please use upstream InstructLab.
+> [!NOTE]
+> RHEL AI is targeted at server platforms and workstations with discrete GPUs.
+> For laptops, please use upstream InstructLab.
 
 ## Validated Hardware for Developer Preview
 
