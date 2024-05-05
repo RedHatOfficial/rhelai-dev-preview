@@ -271,7 +271,7 @@ training dataset.
 
 #### Understanding the Differences Between ilab and RHEL AI CLIs
 
-The `ilab command line interface that is part of the InstructLab project focuses
+The `ilab` command line interface that is part of the InstructLab project focuses
 on running lightweight quantized models on personal computing devices like
 laptops. In contrast, RHEL AI enables the use of high-fidelity training using
 full-precision models. For familiarity, the command and parameters mirror that
