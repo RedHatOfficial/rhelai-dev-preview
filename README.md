@@ -1,6 +1,8 @@
 # RHEL AI Developer Preview Guide
 
-This guide will help you assemble and test a developer preview version of the RHEL AI product.
+This guide will help you assemble and test a [developer
+preview](https://access.redhat.com/support/offerings/devpreview) version of the
+RHEL AI product.
 
 ## Overview
 
@@ -13,7 +15,7 @@ GA.
 
 > [!NOTE]
 > RHEL AI is targeted at server platforms and workstations with discrete GPUs.
-> For laptops, please use upstream InstructLab.
+> For laptops, please use upstream [InstructLab](https://github.com/instructlab).
 
 ## Validated Hardware for Developer Preview
 
@@ -60,9 +62,9 @@ By the end of this exercise, you’ll have:
 
 ### What is bootc?
 
-`bootc` is a transactional, in-place operating system that provisions and
-updates using OCI/Docker container images. bootc is the key component in a
-broader mission of bootable containers.
+[`bootc`](https://containers.github.io/bootc/) is a transactional, in-place
+operating system that provisions and updates using OCI/Docker container images.
+bootc is the key component in a broader mission of bootable containers.
 
 The original Docker container model of using "layers" to model applications has
 been extremely successful. This project aims to apply the same technique for
@@ -88,8 +90,9 @@ and uploading container images could take up to 2 hours.
 
 ## Preparing the Build Host
 
-Register the host (How to register and subscribe a RHEL system to the Red Hat
-Customer Portal using Red Hat Subscription-Manager?)
+Register the host ([How to register and subscribe a RHEL system to the Red Hat
+Customer Portal using Red Hat
+Subscription-Manager?](https://access.redhat.com/solutions/253273))
 
 ```sh
 sudo subscription-manager register --username <username> --password <password>
@@ -107,8 +110,9 @@ Clone the RHEL AI Developer Preview git repo
 git clone https://github.com/RedHatOfficial/rhelai-dev-preview
 ```
 
-Authenticate to Red Hat registry (Red Hat Container Registry Authentication)
-using your redhat.com account.
+Authenticate to the Red Hat registry ([Red Hat Container Registry
+Authentication](https://access.redhat.com/RegistryAuthentication)) using your
+redhat.com account.
 
 ```shell
 podman login registry.redhat.io --username <username> --password <password>
@@ -117,8 +121,8 @@ Your_login_here
 ```
 
 Ensure you have an SSH key on the build host. This is used during the driver
-toolkit image build. (Using ssh-keygen and sharing for key-based authentication
-in Linux | Enable Sysadmin)
+toolkit image build. ([Using ssh-keygen and sharing for key-based authentication
+in Linux | Enable Sysadmin](https://www.redhat.com/sysadmin/configure-ssh-keygen))
 
 ### Creating bootc containers
 
@@ -132,13 +136,13 @@ Build the instructlab nvidia container image.
 make instruct-nvidia
 ```
 
-Build the vllm container image.
+Build the [vllm](https://github.com/vllm-project/vllm) container image.
 
 ```sh
 make vllm
 ```
 
-Build the deepspeed container image.
+Build the [deepspeed](https://www.deepspeed.ai/) container image.
 
 ```sh
 make deepspeed
@@ -153,7 +157,8 @@ make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4
 ```
 
 The resulting image is tagged `quay.io/rhelai-dev-preview/nvidia-bootc:latest`.
-For more variables and examples, see the README.
+For more variables and examples, see the
+[training/README](https://github.com/rhelai-dev-preview/tree/main/training).
 
 Tag your image with your registry name and path:
 
@@ -172,14 +177,16 @@ podman push quay.io/<your-user-name>/nvidia-bootc:latest
 
 ### Provisioning your GPU host (kickstart method)
 
-Anaconda is the Red Hat Enterprise Linux installer, and it is embedded in all
-RHEL downloadable iso images. The main method of automating RHEL installation is
+[Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) is the
+Red Hat Enterprise Linux installer, and it is embedded in all RHEL downloadable
+iso images. The main method of automating RHEL installation is
 via scripts called Kickstart. For more information about Anaconda and Kickstart,
-read these documents.
+[read these documents](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/performing_an_advanced_rhel_9_installation/index#what-are-kickstart-installations_kickstart-installation-basics).
 
-A recent kickstart command called ostreecontainer was introduced with RHEL 9.4.
-We use ostreecontainer to provision the bootable ```nvidia-bootc` container you
-just pushed to your registry over the network.
+A recent kickstart command called
+[`ostreecontainer`](https://pykickstart.readthedocs.io/en/latest/kickstart-docs.html#ostreecontainer)
+was introduced with RHEL 9.4.  We use `ostreecontainer` to provision the bootable
+`nvidia-bootc` container you just pushed to your registry over the network.
 
 Here is an example of a kickstart file. Copy it to a file called
 rhelai-dev-preview-bootc.ks, and customize it for your environment:
@@ -212,8 +219,10 @@ rhelai-dev-preview-bootc.ks, and customize it for your environment:
 
 ### Embed your kickstart into the RHEL Boot iso
 
-Download the RHEL 9.4 “Boot iso”, and use ```mkksiso``` command to embed the
-kickstart into the RHEL boot iso.
+[Download the RHEL
+9.4](https://developers.redhat.com/products/rhel/download#rhel-new-product-download-list-61451)
+“Boot iso”, and use `mkksiso` command to embed the kickstart into the RHEL
+boot iso.
 
 ```sh
 mkksiso rhelai-dev-preview-bootc.ks rhel-9.4-x86_64-boot.iso rhelai-dev-preview-bootc-ks.iso
@@ -236,18 +245,27 @@ provision RHEL according to your kickstart file.
 ### Download Models
 
 Before using the RHEL AI environment, you must download two models, each
-tailored to a key function in the high-fidelity tuning process. Granite is used
-as the student model and is responsible for facilitating the training of a new
-fine-tuned mode. Mixtral is used as the teacher model and is responsible for
-aiding the generation phase of the LAB process, where skills and knowledge are
-used in concert to produce a rich training dataset.
+tailored to a key function in the high-fidelity tuning process.
+[Granite](https://huggingface.co/instructlab) is used as the student model and
+is responsible for facilitating the training of a new
+fine-tuned mode.
+[Mixtral](https://huggingface.co/mistralai/Mixtral-8x7B-Instruct-v0.1) is used
+as the teacher model and is responsible for aiding the generation phase of the
+LAB process, where skills and knowledge are used in concert to produce a rich
+training dataset.
 
 ### Prerequisites
 
-- Before you can start the download process, you need to create an account on HuggingFace.co and manually acknowledge the terms and conditions for Mixtral.
-- Additionally, you will need to create a token on the Hugging Face site so we can download the model from the command line.
-  - Click on your profile in the upper right corner and click Settings.
-  - Click Access Tokens. Click the New token button and provide a name. The new token only requires the use of Read permissions since it's only being used to fetch models. On this screen, you will be able to generate the token content and save and copy the text to authenticate.
+- Before you can start the download process, you need to create an account on
+  [HuggingFace.co](https://huggingface.co/) and manually acknowledge the terms and
+   conditions for Mixtral.
+- Additionally, you will need to create a token on the Hugging Face site so we
+  can download the model from the command line.
+  - Click on your profile in the upper right corner and click `Settings`.
+  - Click `Access Tokens`. Click the `New token` button and provide a name. The
+    new token only requires the use of `Read` permissions since it's only being
+    used to fetch models. On this screen, you will be able to generate the token
+    content and save and copy the text to authenticate.
 
 ### Review and accept the terms of the Mixtral model
 
@@ -332,8 +350,10 @@ my-project/
 ### Modifying the Taxonomy
 
 The next step is to contribute new knowledge or skills into the taxonomy repo.
-See the instruct lab documentation for more information and examples of how to
-do this. We also have set of lab exercises here.
+See the [InstructLab
+documentation](https://github.com/instructlab/taxonomy/blob/main/README.md) for
+more information and examples of how to do this. We also have a set of lab
+exercises here.
 
 #### Launching the Teacher model
 
@@ -493,7 +513,7 @@ Thank you!
 - We have not tried this with Fedora (coming soon!)
 - We intend to include a toolbox container inside the bootc container. For now, you can pull any toolbox image (e.g., fedora toolbx).
 - RHUI-entitled hosts (e.g., on AWS) will require additional configuration to move from RHUI cloud auto-registration to Red Hat standard registration.
-- Use subscription-manager with username/password or activation key, then run the following command: ```$ sudo subscription-manager config --rhsm.manage_repos=1```
+- Use subscription-manager with username/password or activation key, then run the following command: `$ sudo subscription-manager config --rhsm.manage_repos=1`
 
 ### Troubleshooting
 
