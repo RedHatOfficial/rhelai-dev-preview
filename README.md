@@ -41,7 +41,7 @@ Developer Preview.
 
 For the best experience using the RHEL AI developer preview period, we have
 included a pruned taxonomy tree inside the InstructLab container. This will
-allow for validating training to complete in a reasonable timeframe on a single
+allow for validating training to complete in a reasonable time frame on a single
 server.
 
 - Add your knowledge and skills to this version of the taxonomy. We recommend you add no more than 5 additions to the taxonomy tree to keep the resource requirements reasonable.
@@ -73,8 +73,8 @@ delivery format for base operating system updates.
 
 The container image includes a Linux kernel (in e.g. `/usr/lib/modules`), which is
 used to boot. At runtime on a target system, the base userspace is not itself
-running in a container by default. For example, assuming systemd is in use,
-systemd acts as pid1 as usual - there's no "outer" process.
+running in a container by default. For example, assuming `systemd` is in use,
+`systemd` acts as `pid1` as usual - there's no "outer" process.
 
 In the following example, the bootc container is labeled **Node Base Image*
 
@@ -85,8 +85,8 @@ and uploading container images could take up to 2 hours.
 
 - RHEL 9.4
 - Connection to the internet (some images are > 15GB)
-- 4 CPU, 16GB RAM, 400GB disk space (tested with AWS EC2 m5.xlarge using GP3 storage)
-- A place to push container images that you will build – e.g., quay.io or another image registry.
+- 4 CPU, 16GB RAM, 400GB disk space (tested with AWS EC2 `m5.xlarge` using GP3 storage)
+- A place to push container images that you will build – e.g., `quay.io` or another image registry.
 
 ## Preparing the Build Host
 
@@ -112,7 +112,7 @@ git clone https://github.com/RedHatOfficial/rhelai-dev-preview
 
 Authenticate to the Red Hat registry ([Red Hat Container Registry
 Authentication](https://access.redhat.com/RegistryAuthentication)) using your
-redhat.com account.
+`redhat.com` account.
 
 ```shell
 podman login registry.redhat.io --username <username> --password <password>
@@ -121,7 +121,7 @@ Your_login_here
 ```
 
 Ensure you have an SSH key on the build host. This is used during the driver
-toolkit image build. ([Using ssh-keygen and sharing for key-based authentication
+toolkit image build. ([Using `ssh-keygen` and sharing for key-based authentication
 in Linux | Enable Sysadmin](https://www.redhat.com/sysadmin/configure-ssh-keygen))
 
 ### Creating bootc containers
@@ -136,13 +136,13 @@ Build the InstructLab NVIDIA container image.
 make instruct-nvidia
 ```
 
-Build the [vllm](https://github.com/vllm-project/vllm) container image.
+Build the [`vllm`](https://github.com/vllm-project/vllm) container image.
 
 ```sh
 make vllm
 ```
 
-Build the [deepspeed](https://www.deepspeed.ai/) container image.
+Build the [`deepspeed`](https://www.deepspeed.ai/) container image.
 
 ```sh
 make deepspeed
@@ -179,7 +179,7 @@ podman push quay.io/<your-user-name>/nvidia-bootc:latest
 
 [Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) is the
 Red Hat Enterprise Linux installer, and it is embedded in all RHEL downloadable
-iso images. The main method of automating RHEL installation is
+ISO images. The main method of automating RHEL installation is
 via scripts called Kickstart. For more information about Anaconda and Kickstart,
 [read these documents](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/performing_an_advanced_rhel_9_installation/index#what-are-kickstart-installations_kickstart-installation-basics).
 
@@ -217,12 +217,12 @@ Here is an example of a kickstart file. Copy it to a file called
 # reboot
 ```
 
-### Embed your kickstart into the RHEL Boot iso
+### Embed your kickstart into the RHEL Boot ISO
 
 [Download the RHEL
 9.4](https://developers.redhat.com/products/rhel/download#rhel-new-product-download-list-61451)
-“Boot iso”, and use `mkksiso` command to embed the kickstart into the RHEL
-boot iso.
+“Boot ISO”, and use `mkksiso` command to embed the kickstart into the RHEL
+boot ISO.
 
 ```sh
 mkksiso rhelai-dev-preview-bootc.ks rhel-9.4-x86_64-boot.iso rhelai-dev-preview-bootc-ks.iso
@@ -418,10 +418,10 @@ INFO:     Finished server process [1]
 With VLLM stopped and the new data generated, the training process can be
 launched using the `ilab train` command. By default, the training process
 saves a model checkpoint after every 4999 samples. You can adjust this using the
-–num-samples parameter. Additionally, training defaults to running for 10
-epochs, which can also be adjusted with the –num-epochs parameter. Generally,
-more epochs are better, but after a certain point, the model can become
-overfitted. It is typically recommended to stay within 10 or fewer epochs and to
+`--num-samples` parameter. Additionally, training defaults to running for 10
+epochs, which can also be adjusted with the `--num-epochs` parameter. Generally,
+more epochs are better, but after a certain point, more epochs will result in
+overfitting. It is typically recommended to stay within 10 or fewer epochs and to
 look at different sample points to find the best result.
 
 ```sh

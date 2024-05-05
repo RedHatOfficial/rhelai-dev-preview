@@ -34,6 +34,14 @@ update-training-dir: ## Update the contents of the training directory
 	$(CMD_PREFIX) rm -rf ai-lab-recipes
 	$(CMD_PREFIX) git add training
 
+.PHONY: spellcheck
+spellcheck:
+	$(CMD_PREFIX) python -m pyspelling --config .spellcheck.yml --spellchecker aspell
+
+.PHONY: spellcheck-sort
+spellcheck-sort: .spellcheck-en-custom.txt
+	$(CMD_PREFIX) sort -d -f -o $< $<
+
 # Catch-all target to pass through any other target to the training directory
 %:
 	$(CMD_PREFIX) make -C training $@

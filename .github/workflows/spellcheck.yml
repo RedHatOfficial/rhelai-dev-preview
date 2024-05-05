@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+
+name: Spellcheck
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - '**.md'
+      - '.github/workflows/spellcheck.yml' # This workflow
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - '**.md'
+      - '.github/workflows/spellcheck.yml' # This workflow
+
+env:
+  LC_ALL: en_US.UTF-8
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  spellcheck:
+    name: Spellcheck (en_US)
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Harden Runner"
+        uses: step-security/harden-runner@a4aa98b93cab29d9b1101a6143fb8bce00e2eac4 # v2.7.1
+        with:
+         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
+      - name: "Checkout"
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        with:
+          fetch-depth: 0
+
+      - name: Spellcheck
+        uses: rojopolis/spellcheck-github-actions@dbd2f1da869c05ad874fffeb6fe1ed50cd1a6e98 # v0.36.0
