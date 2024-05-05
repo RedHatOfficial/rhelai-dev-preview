@@ -91,15 +91,21 @@ and uploading container images could take up to 2 hours.
 Register the host (How to register and subscribe a RHEL system to the Red Hat
 Customer Portal using Red Hat Subscription-Manager?)
 
-`sudo subscription-manager register --username <username> --password <password>`
+```sh
+sudo subscription-manager register --username <username> --password <password>
+```
 
 Install required packages
 
-`sudo dnf install git make podman buildah lorax -y`
+```sh
+sudo dnf install git make podman buildah lorax -y
+```
 
 Clone the RHEL AI Developer Preview git repo
 
-`git clone https://github.com/RedHatOfficial/rhelai-dev-preview`
+```sh
+git clone https://github.com/RedHatOfficial/rhelai-dev-preview
+```
 
 Authenticate to Red Hat registry (Red Hat Container Registry Authentication)
 using your redhat.com account.
@@ -122,33 +128,45 @@ take up to an hour.
 
 Build the instructlab nvidia container image.
 
-`make instruct-nvidia`
+```sh
+make instruct-nvidia
+```
 
 Build the vllm container image.
 
-`make vllm`
+```sh
+make vllm
+```
 
 Build the deepspeed container image.
 
-`make deepspeed`
+```sh
+make deepspeed
+```
 
 Last, build the RHEL AI nvidia `bootc` container image. This is the RHEL
 Image-mode “bootable” container. We embed the 3 images above into this
 container.
 
-`make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4`
+```sh
+make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4
+```
 
 The resulting image is tagged `quay.io/rhelai-dev-preview/nvidia-bootc:latest`.
 For more variables and examples, see the README.
 
 Tag your image with your registry name and path:
 
-`podman tag quay.io/<your-user-name>/nvidia-bootc:latest quay.io/<your-user-name>/nvidia-bootc:latest`
+```sh
+podman tag quay.io/<your-user-name>/nvidia-bootc:latest quay.io/<your-user-name>/nvidia-bootc:latest
+```
 
 Push the resulting image to your registry. You will refer to this URL inside a
 kickstart file in an upcoming step.
 
-`podman push quay.io/<your-user-name>/nvidia-bootc:latest`
+```sh
+podman push quay.io/<your-user-name>/nvidia-bootc:latest
+```
 
 > At this point you have a RHEL AI bootable container image ready to be installed on a physical or virtual host.
 
@@ -197,7 +215,9 @@ rhelai-dev-preview-bootc.ks, and customize it for your environment:
 Download the RHEL 9.4 “Boot iso”, and use ```mkksiso``` command to embed the
 kickstart into the RHEL boot iso.
 
-`mkksiso rhelai-dev-preview-bootc.ks rhel-9.4-x86_64-boot.iso rhelai-dev-preview-bootc-ks.iso`
+```sh
+mkksiso rhelai-dev-preview-bootc.ks rhel-9.4-x86_64-boot.iso rhelai-dev-preview-bootc-ks.iso
+```
 
 At this point you should have:
 
@@ -261,7 +281,9 @@ The very first ilab command you will run sets up the base environment, including
 downloading the taxonomy repo if you choose. This will be needed for later
 steps, so it is recommended to do so.
 
-`ilab init`
+```sh
+ilab init
+```
 
 #### Download Granite-7B (~27GB on disk)
 
@@ -269,7 +291,9 @@ Next, download the IBM Granite base model. Important: Do not download the “lab
 versions of the model. The granite **base** model is most effective when
 performing high-fidelity training.
 
-`ilab download --repository ibm/granite-7b-base`
+```sh
+ilab download --repository ibm/granite-7b-base
+```
 
 #### Download Mixtral-8x7B-Instruct (~96GB on disk)
 
@@ -334,7 +358,9 @@ and will continually output the total number of instructions generated as it is
 updated. This defaults to 5000 instructions, but you can adjust this with the
 –num-instructions option.
 
-`ilab generate`
+```sh
+ilab generate
+```
 
 ```text
 Q> How do cytokines influence the outcome of certain diseases involving tonsils?
@@ -349,7 +375,9 @@ output is recorded in the generated folder. Before training it is recommended to
 review this output to verify it meets expectations. If it is not satisfactory,
 try modifying or creating new examples in the taxonomy and rerunning.
 
-`less generated/generated_Mixtral*.json`
+```sh
+less generated/generated_Mixtral*.json
+```
 
 #### Stopping VLLM
 
@@ -376,7 +404,9 @@ more epochs are better, but after a certain point, the model can become
 overfitted. It is typically recommended to stay within 10 or fewer epochs and to
 look at different sample points to find the best result.
 
-`ilab train --num-epochs 9`
+```sh
+ilab train --num-epochs 9
+```
 
 ```text
 RunningAvgSamplesPerSec=149.4829861942806, CurrSamplesPerSec=161.99957513920629, MemAllocated=22.45GB, MaxMemAllocated=29.08GB
@@ -408,7 +438,9 @@ Generated model in /root/workspace/models/tuned-0504-0051:
 The same `ilab serve` command can be used to serve the new model by passing the
 –model option with the name and sample
 
-`ilab serve --model tuned-0504-0051/samples_49920`
+```sh
+ilab serve --model tuned-0504-0051/samples_49920
+```
 
 #### Chatting with the New Model
 
@@ -417,7 +449,9 @@ creating a new terminal session and passing the same –model parameter to chat
 (Note that if this does not match, you will receive a 404 error message).  Ask
 it a question related to your taxonomy contributions.
 
-`ilab chat --model tuned-0504-0051/samples_49920`
+```sh
+ilab chat --model tuned-0504-0051/samples_49920
+```
 
 #### Example Chat Session with the New Model
 
@@ -470,8 +504,12 @@ Ensure your build host has 400GB of storage.
 - Run `make prune` out of the training subdirectory. This will clean up old build artifacts.
 - Sometimes, interrupting the container build process may lead to wanting a complete restart of the process. For those cases, we can instruct podman to start from scratch and discard the cached layers. This is possible by passing the `--no-cache` parameter to the build process
 
-`make nvidia-bootc CONTAINER_TOOL_EXTRA_ARGS="--no-cache"`
+```sh
+make nvidia-bootc CONTAINER_TOOL_EXTRA_ARGS="--no-cache"
+```
 
 - The building of accelerated images requires a lot of temporary disk space. In case you need to specify a directory for temporary storage, this can be done with the `TMPDIR` environment variable:
 
-`make <platform> TMPDIR=/path/to/tmp`
+```sh
+make <platform> TMPDIR=/path/to/tmp
+```
