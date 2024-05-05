@@ -13,3 +13,4 @@ ignores:
   - "**/node_modules/**"
   - ".tox/**"
   - "venv/**"
+  - "training/**"

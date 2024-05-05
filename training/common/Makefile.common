@@ -1,0 +1,101 @@
+FROM ?=
+VENDOR ?=
+
+REGISTRY ?= quay.io
+REGISTRY_ORG ?= ai-lab
+IMAGE_NAME ?= $(VENDOR)-bootc
+IMAGE_TAG ?= latest
+BOOTC_IMAGE ?= ${REGISTRY}/${REGISTRY_ORG}/${IMAGE_NAME}:${IMAGE_TAG}
+
+CONTAINER_TOOL ?= podman
+CONTAINER_TOOL_EXTRA_ARGS ?=
+EXTRA_RPM_PACKAGES ?=
+GRAPH_ROOT=$(shell podman info --format '{{ .Store.GraphRoot }}')
+AUTH_JSON ?=
+
+BOOTC_IMAGE_BUILDER ?= quay.io/centos-bootc/bootc-image-builder
+IMAGE_BUILDER_CONFIG ?=
+DISK_TYPE ?= qcow2
+DISK_UID ?= $(shell id -u)
+DISK_GID ?= $(shell id -g)
+
+ARCH ?=
+
+DRIVER_VERSION ?=
+KERNEL_VERSION ?=
+
+INSTRUCTLAB_IMAGE = $(REGISTRY)/$(REGISTRY_ORG)/instructlab-$(VENDOR):$(IMAGE_TAG)
+VLLM_IMAGE = $(REGISTRY)/$(REGISTRY_ORG)/vllm:$(IMAGE_TAG)
+TRAIN_IMAGE = $(REGISTRY)/$(REGISTRY_ORG)/deepspeed-trainer:$(IMAGE_TAG)
+INSTRUCTLAB_IMAGE_ID = $(shell $(CONTAINER_TOOL) image inspect $(INSTRUCTLAB_IMAGE) --format {{.Id}})
+VLLM_IMAGE_ID = $(shell $(CONTAINER_TOOL) image inspect $(VLLM_IMAGE) --format {{.Id}})
+TRAIN_IMAGE_ID = $(shell $(CONTAINER_TOOL) image inspect $(TRAIN_IMAGE) --format {{.Id}})
+WRAPPER = $(CURDIR)/../ilab-wrapper/ilab
+QLORA_WRAPPER = $(CURDIR)/../ilab-wrapper/ilab-qlora
+TRAIN_WRAPPER =  $(CURDIR)/../ilab-wrapper/ilab-training-launcher
+OUTDIR = $(CURDIR)/../build
+
+SSH_PUBKEY ?= $(shell cat ${HOME}/.ssh/id_rsa.pub 2> /dev/null)
+
+.PHONY: prepare-files
+prepare-files: $(OUTDIR)/$(WRAPPER) $(OUTDIR)/$(QLORA_WRAPPER) $(OUTDIR)/$(TRAIN_WRAPPER) $(OUTDIR)/$(INSTRUCTLAB_IMAGE_ID) $(OUTDIR)/$(VLLM_IMAGE_ID) $(OUTDIR)/$(TRAIN_IMAGE_ID) 
+
+$(OUTDIR):
+	mkdir -p $(OUTDIR)
+
+$(OUTDIR)/$(WRAPPER): $(OUTDIR)
+	cp -pf $(WRAPPER) $(OUTDIR)
+$(OUTDIR)/$(QLORA_WRAPPER): $(OUTDIR)
+	cp -pf $(QLORA_WRAPPER) $(OUTDIR)
+$(OUTDIR)/$(TRAIN_WRAPPER): $(OUTDIR)
+	cp -pf $(TRAIN_WRAPPER) $(OUTDIR)
+
+$(OUTDIR)/$(INSTRUCTLAB_IMAGE_ID):
+	@mkdir -p $(OUTDIR)/$(INSTRUCTLAB_IMAGE_ID)
+	$(CONTAINER_TOOL) push --compress=false $(INSTRUCTLAB_IMAGE) oci:$(OUTDIR)/$(INSTRUCTLAB_IMAGE_ID)/
+$(OUTDIR)/$(VLLM_IMAGE_ID):
+	@mkdir -p $(OUTDIR)/$(VLLM_IMAGE_ID)
+	$(CONTAINER_TOOL) push --compress=false $(VLLM_IMAGE) oci:$(OUTDIR)/$(VLLM_IMAGE_ID)/
+$(OUTDIR)/$(TRAIN_IMAGE_ID):
+	@mkdir -p $(OUTDIR)/$(TRAIN_IMAGE_ID)
+	$(CONTAINER_TOOL) push --compress=false $(TRAIN_IMAGE) oci:$(OUTDIR)/$(TRAIN_IMAGE_ID)/
+
+.PHONY: check-sshkey
+check-sshkey:
+	@test -n "$(SSH_PUBKEY)" || \
+		(echo -n "Error: no ssh key defined! "; \
+		 echo "Create ~/.ssh/id_rsa.pub or set SSH_PUBKEY"; exit 1)
+
+.PHONY: push
+push:
+	podman push "${REGISTRY}/${REGISTRY_ORG}/${IMAGE_NAME}:${IMAGE_TAG}"
+
+.PHONY: growfs
+growfs:
+	# Add growfs service
+	mkdir -p build; cp -pR ../common/usr build
+
+.PHONY: bootc-image-builder
+bootc-image-builder:
+	mkdir -p build/store
+	podman run \
+	  --rm \
+	  -ti \
+	  -v $(GRAPH_ROOT):/var/lib/containers/storage \
+	  $(AUTH_JSON:%=-v %:/run/containers/0/auth.json) \
+	  $(IMAGE_BUILDER_CONFIG:%=-v %:/config.json) \
+	  --privileged \
+	  --pull newer \
+	  -v ./build:/output \
+	  -v ./build/store:/store \
+	  $(BOOTC_IMAGE_BUILDER) \
+	  $(ARCH:%=--target-arch %) \
+	  $(IMAGE_BUILDER_CONFIG:%=--config /config.json) \
+	  --type $(DISK_TYPE) \
+	  --chown $(DISK_UID):$(DISK_GID) \
+	  --local \
+	  $(BOOTC_IMAGE)
+
+.PHONY: clean
+clean:
+	rm -rf build
