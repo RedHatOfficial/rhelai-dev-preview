@@ -49,7 +49,7 @@ server.
 
 **Formula:**
 A single GPU can train ~250 samples per minute.
-If you have 8 GPUs and 10,000 samples, expect it to take (10000/250/8*10) minutes, or about 50 minutes for 10 epochs.
+If you have 8 GPUs and 10,000 samples, expect it to take $`(10000/250/8*10)`$ minutes, or about 50 minutes for 10 epochs.
 For smoke testing, feel free to run 1-2 epochs (note we recommend 10 epochs for best results).
 
 ## Trying it Out
