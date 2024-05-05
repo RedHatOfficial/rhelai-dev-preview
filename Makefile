@@ -1,7 +1,3 @@
-.PHONY: help
-help:
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-
 #
 # If you want to see the full commands, run:
 #   NOISY_BUILD=y make
@@ -15,6 +11,10 @@ else
     CMD_PREFIX=
     PIPE_DEV_NULL=
 endif
+
+.PHONY: help
+help:
+	$(CMD_PREFIX) make -C training $@
 
 .PHONY: md-lint
 md-lint: ## Lint markdown files
@@ -31,3 +31,7 @@ update-training-dir: ## Update the contents of the training directory
 	$(CMD_PREFIX) mkdir -p training
 	$(CMD_PREFIX) cd ai-lab-recipes && git archive $(AI_LAB_REF) training | tar -x -C ../
 	$(CMD_PREFIX) rm -rf ai-lab-recipes
+
+# Catch-all target to pass through any other target to the training directory
+%:
+	$(CMD_PREFIX) make -C training $@
