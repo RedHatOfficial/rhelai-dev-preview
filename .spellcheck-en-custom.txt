@@ -49,6 +49,7 @@ codebases
 compositional
 Conala
 Corbett
+CPUs
 curation
 cybette
 danmcp
@@ -60,6 +61,7 @@ datasets
 dave
 DCO
 De
+deepspeed
 deployable
 DeSaix
 dev

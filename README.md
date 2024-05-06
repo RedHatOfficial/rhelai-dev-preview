@@ -13,6 +13,15 @@ simplification, as well as a broadening of capabilities, hardware and software
 support versions, performance improvements (and other optimizations) prior to
 GA.
 
+RHEL AI is an open-source product that includes:
+
+- [Granite](https://huggingface.co/instructlab): an open source, Apache 2 licensed foundation model from IBM.
+- [InstructLab](https://github.com/instructlab): a CLI and tuning backend that provides a simple user interface for contributing knowledge and skills to a base model.
+- [RHEL Image Mode (bootc)](https://github.com/containers/bootc): RHEL AI is distributed as a “bootable container” image.  Provision RHEL AI appliances via kickstart onto bare metal or cloud instances.
+- [vLLM](https://github.com/vllm-project/vllm): A high-throughput and memory-efficient inference and serving engine for LLMs, based on PyTorch.
+- [deepspeed](https://www.deepspeed.ai/): A deep learning optimization software suite for both training and inference.
+- [PyTorch](https://pytorch.org/): PyTorch is an optimized tensor library for deep learning using GPUs and CPUs.
+
 > [!NOTE]
 > RHEL AI is targeted at server platforms and workstations with discrete GPUs.
 > For laptops, please use upstream [InstructLab](https://github.com/instructlab).
@@ -157,24 +166,18 @@ Image-mode “bootable” container. We embed the 3 images above into this
 container.
 
 ```sh
-make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4
+make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4 REGISTRY=<your-registry> REGISTRY_ORG=<your-org-name>
 ```
 
-The resulting image is tagged `quay.io/rhelai-dev-preview/nvidia-bootc:latest`.
+The resulting image is tagged `${REGISTRY}/${REGISTRY_ORG}/nvidia-bootc:latest`.
 For more variables and examples, see the
 [training/README](https://github.com/rhelai-dev-preview/tree/main/training).
 
-Tag your image with your registry name and path:
+Push the resulting image to your registry. You will refer to this URL inside a kickstart file in an upcoming step.
 
 ```sh
-podman tag quay.io/<your-user-name>/nvidia-bootc:latest quay.io/<your-user-name>/nvidia-bootc:latest
-```
-
-Push the resulting image to your registry. You will refer to this URL inside a
-kickstart file in an upcoming step.
-
-```sh
-podman push quay.io/<your-user-name>/nvidia-bootc:latest
+podman push ${REGISTRY}/${REGISTRY_ORG}/nvidia-bootc:latest
+e.g. podman push quay.io/<your-user-name>/nvidia-bootc.latest
 ```
 
 > At this point you have a RHEL AI bootable container image ready to be installed on a physical or virtual host.
