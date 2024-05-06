@@ -17,6 +17,8 @@ GA.
 > RHEL AI is targeted at server platforms and workstations with discrete GPUs.
 > For laptops, please use upstream [InstructLab](https://github.com/instructlab).
 
+![RHEL AI Developer Preview](images/rhel-ai-developer-preview.png)
+
 ## Validated Hardware for Developer Preview
 
 Here is a list of servers validated by Red Hat engineers to work with the RHEL
@@ -76,7 +78,9 @@ used to boot. At runtime on a target system, the base userspace is not itself
 running in a container by default. For example, assuming `systemd` is in use,
 `systemd` acts as `pid1` as usual - there's no "outer" process.
 
-In the following example, the bootc container is labeled **Node Base Image*
+In the following example, the bootc container is labeled `Node Base Image`:
+
+![bootc Example](images/bootc-example.png)
 
 ## Build Host Prerequisites
 
@@ -267,7 +271,11 @@ training dataset.
     used to fetch models. On this screen, you will be able to generate the token
     content and save and copy the text to authenticate.
 
-### Review and accept the terms of the Mixtral model
+![HuggingFace Access Tokens](images/hf-access-tokens.png)
+
+- Review and accept the terms of the Mixtral model
+
+![Agree to terms for Mixtral](images/mixtral-agree.png)
 
 #### Understanding the Differences Between ilab and RHEL AI CLIs
 
