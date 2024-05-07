@@ -43,9 +43,9 @@ Developer Preview.
 | GPU Vendor / Specs   | RHEL AI Dev Preview |
 |----------------------|---------------------|
 | Dell (4) NVIDIA H100 | Yes                 |
+| [IBM](https://community.ibm.com/community/user/blogs/dan-waugh/2024/05/06/rhel-ai-on-ibm-cloud-for-custom-model-tuning) `GX3` Instances | Yes |
 | Lenovo (8) AMD MI300x| Yes                 |
 | AWS p4 and p5 instances (NVIDIA) | Ongoing |
-| IBM                  | Ongoing             |
 | Intel                | Ongoing             |
 
 ### Training Performance - What to Expect
