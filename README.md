@@ -199,29 +199,29 @@ Here is an example of a kickstart file. Copy it to a file called
 `rhelai-dev-preview-bootc.ks`, and customize it for your environment:
 
 ```text
-# text
-## customize this for your target system
-# network --bootproto=dhcp --device=link --activate
+text
+# customize this for your target system
+network --bootproto=dhcp --device=link --activate
 
-## Basic partitioning
-## customize this for your target system
-# clearpart --all --initlabel --disklabel=gpt
-# reqpart --add-boot
-# part / --grow --fstype xfs
+# Basic partitioning
+customize this for your target system
+clearpart --all --initlabel --disklabel=gpt
+reqpart --add-boot
+part / --grow --fstype xfs
 
-# ostreecontainer --url quay.io/<your-user-name>/nvidia-bootc:latest
+ostreecontainer --url quay.io/<your-user-name>/nvidia-bootc:latest
 
-# firewall --disabled
-# services --enabled=sshd
+firewall --disabled
+services --enabled=sshd
 
-## optionally add a user
-# user --name=cloud-user --groups=wheel --plaintext --password
-# sshkey --username cloud-user "ssh-ed25519 AAAAC3Nza....."
+# optionally add a user
+user --name=cloud-user --groups=wheel --plaintext --password
+sshkey --username cloud-user "ssh-ed25519 AAAAC3Nza....."
 
-## if desired, inject an SSH key for root
-# rootpw --iscrypted locked
-# sshkey --username root "ssh-ed25519 AAAAC3Nza..."
-# reboot
+# if desired, inject an SSH key for root
+rootpw --iscrypted locked
+sshkey --username root "ssh-ed25519 AAAAC3Nza..."
+reboot
 ```
 
 ### Embed your kickstart into the RHEL Boot ISO
