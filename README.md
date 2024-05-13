@@ -171,7 +171,7 @@ make nvidia FROM=registry.redhat.io/rhel9/rhel-bootc:9.4 REGISTRY=<your-registry
 
 The resulting image is tagged `${REGISTRY}/${REGISTRY_ORG}/nvidia-bootc:latest`.
 For more variables and examples, see the
-[training/README](https://github.com/rhelai-dev-preview/tree/main/training).
+[training/README](https://github.com/RedHatOfficial/rhelai-dev-preview/tree/main/training).
 
 Push the resulting image to your registry. You will refer to this URL inside a kickstart file in an upcoming step.
 
