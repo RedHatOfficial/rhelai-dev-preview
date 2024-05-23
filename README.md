@@ -314,6 +314,15 @@ steps, so it is recommended to do so.
 ilab init
 ```
 
+#### Set up your Hugging Face token
+
+Define an environment variable using the HF token you created in the above section under
+Access Tokens.
+
+```shell
+export HF_TOKEN=<paste token value here>
+````
+
 #### Download Granite-7B (~27GB on disk)
 
 Next, download the IBM Granite base model. Important: Do not download the “lab”
@@ -326,11 +335,9 @@ ilab download --repository ibm/granite-7b-base
 
 #### Download Mixtral-8x7B-Instruct (~96GB on disk)
 
-Follow the same process, but additionally define an environment variable using
-the HF token you created in the above section under Access Tokens.
+Follow the same process to download the Mixtral model.
 
 ```shell
-export HF_TOKEN=<paste token value here>
 ilab download --repository mistralai/Mixtral-8x7B-Instruct-v0.1
 ```
 
