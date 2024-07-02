@@ -129,6 +129,25 @@ The following image disk types are currently available:
 | `anaconda-iso`        | An unattended Anaconda installer that installs to the first disk found.               |
 | `raw`                 | Unformatted [raw disk](https://en.wikipedia.org/wiki/Rawdisk).                        |
 
+Some of these variables can be used in conjunction with DISK_TYPE=ami to upload the local disk image to S3 and create the AMI from it:
+| Variable             | Description                                                                     |
+|----------------------|---------------------------------------------------------------------------------|
+| AWS_CREDENTIALS_FILE | Optional full path to AWS credentials format file, eg. `$HOME/.aws/credentials` |
+| AWS_PROFILE          | Optional profile section to use from the credentials file, eg. `default`        |
+| AWS_AMI_NAME         | Required AMI name, eg. `rhelai-dev-preview-$(date -I)`                          |
+| AWS_BUCKET           | Required pre-existing S3 bucket name, eg. `rhelai-images`                       |
+| AWS_REGION           | Required region, eg. `us-east-1`                                                |
+
+If you are in an EC2 instance with the required role attached giving it permissions then:
+```shell
+make disk-nvidia DISK_TYPE=ami AWS_AMI_NAME=rhelai-dev-preview-$(date -I) AWS_BUCKET=rhelai-images AWS_REGION=us-east-1
+```
+or if you are outside AWS and uploading to it with access keys stored in the credentials file:
+```shell
+make disk-nvidia DISK_TYPE=ami AWS_AMI_NAME=rhelai-dev-preview-$(date -I) AWS_BUCKET=rhelai-images AWS_REGION=us-east-1 AWS_CREDENTIALS_FILE="$HOME/.aws/credentials" AWS_PROFILE=default
+```
+For information about the required permissions see [Required permissions for VM Import/Export](https://docs.aws.amazon.com/vm-import/latest/userguide/required-permissions.html).
+
 # Troubleshooting
 
 Sometimes, interrupting the build process may lead to wanting a complete restart of the process. For those cases, we can instruct `podman` to start from scratch and discard the cached layers. This is possible by passing the `--no-cache` parameter to the build process by using the `CONTAINER_TOOL_EXTRA_ARGS` variable:

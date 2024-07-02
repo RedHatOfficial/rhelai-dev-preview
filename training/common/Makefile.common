@@ -18,6 +18,11 @@ IMAGE_BUILDER_CONFIG ?=
 DISK_TYPE ?= qcow2
 DISK_UID ?= $(shell id -u)
 DISK_GID ?= $(shell id -g)
+AWS_CREDENTIALS_FILE ?=
+AWS_PROFILE ?=
+AWS_AMI_NAME ?=
+AWS_BUCKET ?=
+AWS_REGION ?=
 
 ARCH ?=
 
@@ -78,6 +83,7 @@ growfs:
 .PHONY: bootc-image-builder
 bootc-image-builder:
 	mkdir -p build/store
+# --net host is needed for AWS when using instance roles (it needs access to instance metadata).
 	podman run \
 	  --rm \
 	  -ti \
@@ -85,14 +91,20 @@ bootc-image-builder:
 	  $(AUTH_JSON:%=-v %:/run/containers/0/auth.json) \
 	  $(IMAGE_BUILDER_CONFIG:%=-v %:/config.json) \
 	  --privileged \
+	  --net host \
 	  --pull newer \
 	  -v ./build:/output \
 	  -v ./build/store:/store \
+	  $(AWS_CREDENTIALS_FILE:%=-v $(AWS_CREDENTIALS_FILE):/root/.aws/credentials:ro) \
+	  $(AWS_PROFILE:%=--env AWS_PROFILE=$(AWS_PROFILE)) \
 	  $(BOOTC_IMAGE_BUILDER) \
 	  $(ARCH:%=--target-arch %) \
 	  $(IMAGE_BUILDER_CONFIG:%=--config /config.json) \
 	  --type $(DISK_TYPE) \
 	  --chown $(DISK_UID):$(DISK_GID) \
+	  $(AWS_AMI_NAME:%=--aws-ami-name %) \
+	  $(AWS_BUCKET:%=--aws-bucket %) \
+	  $(AWS_REGION:%=--aws-region %) \
 	  --local \
 	  $(BOOTC_IMAGE)
 
