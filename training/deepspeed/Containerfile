@@ -1,17 +1,20 @@
 # Containerfile for running deepspeed training 
-FROM nvcr.io/nvidia/cuda:12.1.1-cudnn8-devel-ubi9
 
-RUN dnf install -y python python-devel git
-RUN python -m ensurepip --upgrade
-RUN pip3 install torch==2.1.2 --index-url https://download.pytorch.org/whl/cu121
-RUN pip3 install packaging wheel
-RUN pip3 install flash-attn==2.5.7
-RUN pip3 install deepspeed==0.14.2
-RUN pip3 install transformers==4.40.1
-RUN pip3 install ipdb jupyterlab gpustat matplotlib hydra-core datasets rich numba
-RUN git clone https://github.com/instructlab/training.git
-RUN mkdir -p /ilab-data/training_output
-
+# Available versions in
+# https://gitlab.com/nvidia/container-images/cuda/blob/master/doc/supported-tags.md#ubi9:
+FROM nvcr.io/nvidia/cuda:12.2.2-cudnn8-devel-ubi9
+ENV PYTHON_VERSION=3.11
+# TODO: adding libaio-devel here could be a good idea for DeepSpeed, but isn't available con UBI9,
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1840667:
+RUN dnf install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-devel \
+    python${PYTHON_VERSION}-pip git && \
+    dnf clean all && \
+    ln -s /usr/bin/python${PYTHON_VERSION} /usr/local/bin/python
+# These aren't required for ilab train, leaving commented out just in case:
+#RUN pip3 install ipdb jupyterlab gpustat matplotlib hydra-core datasets rich numba
+RUN git clone -b v0.1.0 https://github.com/instructlab/training.git && \
+    mkdir -p /ilab-data/training_output
 WORKDIR /training
-
+RUN pip${PYTHON_VERSION} install --no-cache-dir . && \
+    pip${PYTHON_VERSION} install --no-cache-dir .[cuda]
 CMD ["/bin/bash"]
