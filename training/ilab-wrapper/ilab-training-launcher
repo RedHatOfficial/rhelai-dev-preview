@@ -28,15 +28,15 @@ PODMAN_COMMAND=("podman" "run" "--device" "${CONTAINER_DEVICE}" \
 				"${CONTAINER_NAME}")
 # Convert ilab generate output to match SDG output format for train and test data
 mkdir -p ${SDG_OUTPUT_PATH}/training
-"${PODMAN_COMMAND[@]}" bash -c "python /training/ilab_to_sdg.py \"${TRAINING_DATA_PATH}\" train \"${DATASET_NAME}\"; mv sdg_out.jsonl /instructlab/training/train.jsonl"
-"${PODMAN_COMMAND[@]}" bash -c "python /training/ilab_to_sdg.py \"${TESTING_DATA_PATH}\" test \"${DATASET_NAME}\"; mv sdg_out.jsonl /instructlab/training/test.jsonl"
+"${PODMAN_COMMAND[@]}" bash -c "python /training/src/instructlab/training/ilab_to_sdg.py \"${TRAINING_DATA_PATH}\" train \"${DATASET_NAME}\"; mv sdg_out.jsonl /instructlab/training/train.jsonl"
+"${PODMAN_COMMAND[@]}" bash -c "python /training/src/instructlab/training/ilab_to_sdg.py \"${TESTING_DATA_PATH}\" test \"${DATASET_NAME}\"; mv sdg_out.jsonl /instructlab/training/test.jsonl"
 
 # Add curated subset of taxonomy
 "${PODMAN_COMMAND[@]}" bash -c "cat /training/sample-data/train_all_pruned_SDG.jsonl >> /instructlab/training/train.jsonl"
 
 # Pre-process generated data before training
 "${PODMAN_COMMAND[@]}" bash -c \
-"python data_process.py --logging_level INFO \
+"python /training/src/instructlab/training/data_process.py --logging_level INFO \
 --data_path /instructlab/training/train.jsonl \
 --data_output_path=/instructlab/training \
 --max_seq_len 4096 \
@@ -55,7 +55,7 @@ torchrun \
 --node_rank 0 \
 --nproc_per_node ${NPROC_PER_NODE} \
 --rdzv_id 101 \
---rdzv_endpoint 0.0.0.0:8888 /training/main_ds.py \
+--rdzv_endpoint 0.0.0.0:8888 /training/src/instructlab/training/main_ds.py \
 --model_name_or_path /instructlab/models/ibm/granite-7b-base \
 --data_path /instructlab/training/data.jsonl \
 --output_dir="/instructlab/training_output" \
