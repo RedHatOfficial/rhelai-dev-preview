@@ -184,7 +184,7 @@ e.g. podman push quay.io/<your-user-name>/nvidia-bootc.latest
 
 ### Provisioning your GPU host (kickstart method)
 
-[Anaconda](https://docs.anaconda.com/free/anaconda/install/index.html) is the
+[Anaconda](https://anaconda-installer.readthedocs.io/) is the
 Red Hat Enterprise Linux installer, and it is embedded in all RHEL downloadable
 ISO images. The main method of automating RHEL installation is
 via scripts called Kickstart. For more information about Anaconda and Kickstart,
